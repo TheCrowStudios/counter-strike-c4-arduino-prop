@@ -144,6 +144,23 @@ void ticking()
 
   float fDelay = 0;
 
+  int movingDelay = 50;
+  int lastMoved = millis();
+  int moveCounter = 0;
+  bool moveRight = true;
+
+  char *movement[] = {
+      "*******         ",
+      " *******        ",
+      "  *******       ",
+      "   *******      ",
+      "    *******     ",
+      "     *******    ",
+      "      *******   ",
+      "       *******  ",
+      "        ********",
+  };
+
   while (state == TICKING)
   {
     if ((fTimer - fLastBeep) >= fDelay)
@@ -179,7 +196,25 @@ void ticking()
 
     inputKey(defuseCode);
 
-    if (defuseCode.length() == 7)
+    if (defuseCode.length() == 0 && millis() - lastMoved >= movingDelay) // move placeholder across the screen like in cs
+    {
+      lcdSetCursor(0, 0);
+      lcdPrint(movement[moveCounter]);
+      lastMoved = millis();
+      // moveCounter = (moveCounter + 1) % 9;
+
+      // ping pong
+      moveCounter += moveRight ? 1 : -1;
+      if (moveCounter == 9) {
+        moveRight = false;
+        moveCounter = 7;
+      }
+      if (moveCounter == -1) {
+        moveRight = true;
+        moveCounter = 1;
+      }
+    }
+    else if (defuseCode.length() == 7)
     {
       if (strcmp(defuseCode.getData(), code.getData()) == 0) // codes match
       {
@@ -213,10 +248,10 @@ bool inputKey(SafeString &string)
   {
     if (key != '*' && key != '#' && string.length() < codeLength) // append char
     {
-      lcdPrint(' ', row, 0); // print a space before they key
+      lcdPrint(' ', row, 0);     // print a space before they key
       lcdPrint(key, row + 1, 0); // print the pressed key
-      row += 2;                     // we printed two characters so advance by two rows
-      string.appendChar(key);       // append the character to the stored code
+      row += 2;                  // we printed two characters so advance by two rows
+      string.appendChar(key);    // append the character to the stored code
       Serial.println("key pressed: " + String(key));
     }
     else if (key == '*' && string.length() > 0) // clear char
