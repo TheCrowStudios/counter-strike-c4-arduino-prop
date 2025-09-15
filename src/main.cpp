@@ -51,7 +51,9 @@ char keys[ROWS][COLS] = {
     {'*', '0', '#'}};
 
 LiquidCrystal lcd(lcdRsPin, lcdEPin, lcdD4Pin, lcdD5Pin, lcdD6Pin, lcdD7Pin);
-FlippedLCD flippedLCD(lcd);
+#ifdef LCD_FLIPPED
+FlippedLCD fLCD(lcd);
+#endif
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
@@ -59,8 +61,7 @@ void setup()
 {
   Serial.begin(9600);
   lcd.begin(LCD_COLS, LCD_ROWS);
-  lcd.print("hi :3");
-  flippedLCD.printFlipped("MEOW");
+  lcdPrint("hi :3");
   pinMode(pinArmSwitch, INPUT);
   pinMode(pinPowerLed, OUTPUT);
   pinMode(pinBuzzer, OUTPUT);
@@ -73,9 +74,8 @@ void loop()
   case DISARMED:
     if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
       state = ARMED;
-    // lcd.clear(); // clear lcd
-    // flippedLCD.setCursor(0, 0);
-    // flippedLCD.printFlipped("MEOW");
+    lcd.clear(); // clear lcd
+    lcdSetCursor(0, 0);
     break;
   case ARMED:
     armed();
@@ -161,8 +161,8 @@ void ticking()
       if (fTimer >= fTimerMax) // timer expired
       {
         lcd.clear();
-        lcd.setCursor(2, 0);
-        lcd.print("BYE BYE :3");
+        lcdSetCursor(2, 0);
+        lcdPrint("BYE BYE :3");
 
         // final blowing beeps
         while (blowingBeeps < blowingBeepsMax)
@@ -184,8 +184,8 @@ void ticking()
       if (strcmp(defuseCode.getData(), code.getData()) == 0) // codes match
       {
         lcd.clear();
-        lcd.setCursor(4, 0);
-        lcd.print("DEFUSED");
+        lcdSetCursor(4, 0);
+        lcdPrint("DEFUSED");
         state = DEFUSED;
         row = 0;
       }
@@ -213,17 +213,17 @@ bool inputKey(SafeString &string)
   {
     if (key != '*' && key != '#' && string.length() < codeLength) // append char
     {
-      flippedLCD.setCursor(row, 0);  // put cursor on the current row
-      flippedLCD.printFlipped(' ');         // print a space before they key
-      flippedLCD.printFlipped(key);         // print the pressed key
-      row += 2;               // we printed two characters so advance by two rows
-      string.appendChar(key); // append the character to the stored code
+      lcdSetCursor(row, 0); // put cursor on the current row
+      lcdPrint(' '); // print a space before they key
+      lcdPrint(key); // print the pressed key
+      row += 2;                     // we printed two characters so advance by two rows
+      string.appendChar(key);       // append the character to the stored code
       Serial.println("key pressed: " + String(key));
     }
     else if (key == '*' && string.length() > 0) // clear char
     {
-      lcd.setCursor(row - 1, 0);
-      lcd.print('*');
+      lcdSetCursor(row - 1, 0);
+      lcdPrint('*');
       string.deleteLast();
       row -= 2;
     }
@@ -250,14 +250,38 @@ void blinkPowerLed()
   }
 }
 
+inline void lcdPrint(const char ch)
+{
+#ifndef LCD_FLIPPED;
+  lcd.print(ch);
+#else
+  fLCD.printFlipped(ch);
+#endif
+}
+
+inline void lcdPrint(const char str[])
+{
+#ifndef LCD_FLIPPED;
+  lcd.print(str);
+#else
+  fLCD.printFlipped(str);
+#endif
+}
+
+inline void lcdSetCursor(int col, int row)
+{
+#ifndef LCD_FLIPPED;
+  lcd.setCursor(col, row);
+#else
+  fLCD.setCursor(col, row);
+#endif
+}
+
 /// @brief prints asterisks as a code placeholder
 inline void printCodePlaceholder()
 {
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(" * * * * * * *"); // print asterisks
-  lcd.setCursor(0, 0);
-  flippedLCD.setCursor(0, 0);
-  flippedLCD.printFlipped(" * * * * * * *"); // print asterisks
-  flippedLCD.setCursor(0, 0);
+  lcdSetCursor(0, 0);
+  lcdPrint(" * * * * * * *"); // print asterisks
+  lcdSetCursor(0, 0);
 }
