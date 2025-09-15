@@ -213,17 +213,15 @@ bool inputKey(SafeString &string)
   {
     if (key != '*' && key != '#' && string.length() < codeLength) // append char
     {
-      lcdSetCursor(row, 0); // put cursor on the current row
-      lcdPrint(' '); // print a space before they key
-      lcdPrint(key); // print the pressed key
+      lcdPrint(' ', row, 0); // print a space before they key
+      lcdPrint(key, row + 1, 0); // print the pressed key
       row += 2;                     // we printed two characters so advance by two rows
       string.appendChar(key);       // append the character to the stored code
       Serial.println("key pressed: " + String(key));
     }
     else if (key == '*' && string.length() > 0) // clear char
     {
-      lcdSetCursor(row - 1, 0);
-      lcdPrint('*');
+      lcdPrint('*', row - 1, 0);
       string.deleteLast();
       row -= 2;
     }
@@ -250,12 +248,13 @@ void blinkPowerLed()
   }
 }
 
-inline void lcdPrint(const char ch)
+inline void lcdPrint(const char ch, int col, int row)
 {
 #ifndef LCD_FLIPPED;
+  lcdSetCursor(col, row);
   lcd.print(ch);
 #else
-  fLCD.printFlipped(ch);
+  fLCD.printFlipped(ch, col, row);
 #endif
 }
 

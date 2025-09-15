@@ -32,10 +32,10 @@ void FlippedLCD::setCursor(uint8_t col, uint8_t row)
     lcd.setCursor((LCD_COLS - 1) - col, (LCD_ROWS - 1) - row);
 }
 
+int nextSlot = 0;
+
 void FlippedLCD::printFlipped(const char *str)
 {
-    int nextSlot = 0;
-
     Serial.println("printing flipped string");
 
     for (int i = 0; str[i]; i++)
@@ -57,6 +57,7 @@ void FlippedLCD::printFlipped(const char *str)
 
         const uint8_t *bitmap = getBitmap(ch);
 
+        // look for free slot
         int s;
         for (s = 0; s < MAX_SLOTS; s++)
         {
@@ -64,12 +65,15 @@ void FlippedLCD::printFlipped(const char *str)
                 break;
         }
 
+        // create bitmap again if not found in the slots
         if (s == MAX_SLOTS)
         {
             s = nextSlot;
             lcd.createChar(s, (uint8_t *)bitmap);
             slot[s] = ch;
             nextSlot = (nextSlot + 1) % MAX_SLOTS;
+            if (slot[nextSlot] == '*')
+                nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
         }
 
         setCursor(i, 0); // set cursor again as it is reset after createChar is called
@@ -77,9 +81,8 @@ void FlippedLCD::printFlipped(const char *str)
     }
 }
 
-void FlippedLCD::printFlipped(char ch)
+void FlippedLCD::printFlipped(char ch, int col, int row)
 {
-    int nextSlot = 0;
     const uint8_t *bitmap = getBitmap(ch);
 
     Serial.println(ch);
@@ -99,12 +102,17 @@ void FlippedLCD::printFlipped(char ch)
 
     if (s == MAX_SLOTS)
     {
+        if (slot[nextSlot] == '*')
+            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
         s = nextSlot;
         lcd.createChar(s, (uint8_t *)bitmap);
         slot[s] = ch;
         nextSlot = (nextSlot + 1) % MAX_SLOTS;
+        if (slot[nextSlot] == '*')
+            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
     }
 
+    setCursor(col, row); // set cursor again as it is reset after createChar is called
     lcd.write(byte(s));
 }
 

@@ -15,7 +15,7 @@ public:
     FlippedLCD(LiquidCrystal &lcdInstance);
 
     void printFlipped(const char *str);
-    void printFlipped(char ch);
+    void printFlipped(char ch, int col, int row);
     void setCursor(uint8_t col, uint8_t row);
     void flipBitmap(const uint8_t in[8], uint8_t out[8]);
 
