@@ -75,7 +75,6 @@ void loop()
     if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
       state = ARMED;
     lcd.clear(); // clear lcd
-    lcdSetCursor(0, 0);
     break;
   case ARMED:
     armed();
@@ -98,10 +97,10 @@ void loop()
 
 void armed()
 {
-  int row = 0;
   Serial.println("ARMED");
-  printCodePlaceholder(); // print asterisks
-  code.clear();           // clear entered code
+  code.clear(); // clear entered code
+
+  bool codeEntered = true;
 
   while (state == ARMED)
   {
@@ -110,10 +109,17 @@ void armed()
     if (now - lastCheck >= checkInterval)
     {
       inputKey(code);
+      if (code.length() > 0)
+        codeEntered = true;
+      else if (code.length() == 0 && codeEntered) // check if code has been entered and cleared
+      {
+        printCodePlaceholder(); // print asterisks
+        codeEntered = false;
+      }
 
       if (code.length() == codeLength)
       {
-        printCodePlaceholder();
+        // printCodePlaceholder();
         state = TICKING; // code is 7 characters so we start the timer
         Serial.println("starting timer :3");
         return;
@@ -149,6 +155,7 @@ void ticking()
   int moveCounter = 0;
   bool moveRight = true;
 
+  // TODO - it's just one asterisk
   char *movement[] = {
       "*******         ",
       " *******        ",
@@ -205,11 +212,13 @@ void ticking()
 
       // ping pong
       moveCounter += moveRight ? 1 : -1;
-      if (moveCounter == 9) {
+      if (moveCounter == 9)
+      {
         moveRight = false;
         moveCounter = 7;
       }
-      if (moveCounter == -1) {
+      if (moveCounter == -1)
+      {
         moveRight = true;
         moveCounter = 1;
       }
@@ -248,18 +257,28 @@ bool inputKey(SafeString &string)
   {
     if (key != '*' && key != '#' && string.length() < codeLength) // append char
     {
-      lcdPrint(' ', row, 0);     // print a space before they key
-      lcdPrint(key, row + 1, 0); // print the pressed key
-      row += 2;                  // we printed two characters so advance by two rows
-      string.appendChar(key);    // append the character to the stored code
+      if (string.length() == 0)
+        lcd.clear();
+
+      string.appendChar(key); // append the character to the stored code
       Serial.println("key pressed: " + String(key));
     }
     else if (key == '*' && string.length() > 0) // clear char
     {
-      lcdPrint('*', row - 1, 0);
       string.deleteLast();
-      row -= 2;
     }
+
+    SafeString output(16);
+    for (int i = 0; i < 7; i++)
+    {
+      if (i < 7 - string.length())
+        output.appendChar('-'); // append dashes up to the entered text
+      else
+        output.appendChar(string.getData()[i - (7 - string.length())]); // append entered code after the dashes
+    }
+
+    lcdSetCursor(5, 0);
+    lcdPrint(output.getData()); // print the pressed key
   }
 
   return false;
@@ -315,7 +334,7 @@ inline void lcdSetCursor(int col, int row)
 inline void printCodePlaceholder()
 {
   lcd.clear();
-  lcdSetCursor(0, 0);
-  lcdPrint(" * * * * * * *"); // print asterisks
+  lcdSetCursor(5, 0);  // center it
+  lcdPrint("*******"); // print asterisks
   lcdSetCursor(0, 0);
 }
