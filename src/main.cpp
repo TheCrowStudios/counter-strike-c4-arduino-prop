@@ -150,23 +150,12 @@ void ticking()
 
   float fDelay = 0;
 
-  int movingDelay = 50;
+  const int movingDelay = 50;
+  const int minMoveCounter = 0;
+  const int maxMoveCounter = 15;
   int lastMoved = millis();
   int moveCounter = 0;
   bool moveRight = true;
-
-  // TODO - it's just one asterisk
-  char *movement[] = {
-      "*******         ",
-      " *******        ",
-      "  *******       ",
-      "   *******      ",
-      "    *******     ",
-      "     *******    ",
-      "      *******   ",
-      "       *******  ",
-      "        ********",
-  };
 
   while (state == TICKING)
   {
@@ -205,22 +194,22 @@ void ticking()
 
     if (defuseCode.length() == 0 && millis() - lastMoved >= movingDelay) // move placeholder across the screen like in cs
     {
-      lcdSetCursor(0, 0);
-      lcdPrint(movement[moveCounter]);
+      lcd.clear();
+      lcdPrint('*', moveCounter, 0);
       lastMoved = millis();
       // moveCounter = (moveCounter + 1) % 9;
 
       // ping pong
       moveCounter += moveRight ? 1 : -1;
-      if (moveCounter == 9)
+      if (moveCounter > maxMoveCounter)
       {
         moveRight = false;
-        moveCounter = 7;
+        moveCounter = maxMoveCounter - 1;
       }
-      if (moveCounter == -1)
+      if (moveCounter < minMoveCounter)
       {
         moveRight = true;
-        moveCounter = 1;
+        moveCounter = minMoveCounter + 1;
       }
     }
     else if (defuseCode.length() == 7)
