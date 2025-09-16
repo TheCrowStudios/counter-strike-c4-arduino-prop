@@ -29,6 +29,8 @@ const uint8_t *FlippedLCD::getBitmap(char c)
 
 void FlippedLCD::setCursor(uint8_t col, uint8_t row)
 {
+    this->col = col;
+    this->row = row;
     lcd.setCursor((LCD_COLS - 1) - col, (LCD_ROWS - 1) - row);
 }
 
@@ -38,7 +40,7 @@ void FlippedLCD::printFlipped(const char *str)
 {
     Serial.println("printing flipped string");
 
-    for (int i = 0; str[i]; i++)
+    for (uint8_t i = 0; str[i]; i++)
     {
         char ch = str[i];
 
@@ -48,10 +50,11 @@ void FlippedLCD::printFlipped(const char *str)
             continue;
         }
 
-        if (ch == ' ')
+        if (ch == ' ') // if a space we dont make its just a blank character so we don't make a bitmap
         {
-            setCursor(i, 0); // set cursor
+            setCursor(col, row); // set cursor
             lcd.print(ch);
+            incrementCol();
             continue;
         }
 
@@ -76,8 +79,9 @@ void FlippedLCD::printFlipped(const char *str)
                 nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
         }
 
-        setCursor(i, 0); // set cursor again as it is reset after createChar is called
+        setCursor(col, row); // set cursor again as it is reset after createChar is called
         lcd.write(byte(s));
+        incrementCol();
     }
 }
 
@@ -102,14 +106,14 @@ void FlippedLCD::printFlipped(char ch, int col, int row)
 
     if (s == MAX_SLOTS)
     {
-        if (slot[nextSlot] == '*')
-            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
+        if (slot[nextSlot] == '-')
+            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the dash as it is required for the pin placeholder
         s = nextSlot;
         lcd.createChar(s, (uint8_t *)bitmap);
         slot[s] = ch;
         nextSlot = (nextSlot + 1) % MAX_SLOTS;
-        if (slot[nextSlot] == '*')
-            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the asterisk as it is required for the pin placeholder
+        if (slot[nextSlot] == '-')
+            nextSlot = (nextSlot + 1) % MAX_SLOTS; // do not overwrite the dash as it is required for the pin placeholder
     }
 
     setCursor(col, row); // set cursor again as it is reset after createChar is called
@@ -133,4 +137,11 @@ void FlippedLCD::flipBitmap(const uint8_t in[8], uint8_t out[8])
 
         out[row] = flipped; // start from first row
     }
+}
+
+void FlippedLCD::incrementCol()
+{
+    col = (col + 1) % 16;
+    if (col == 0)
+        row = (row + 1) % 2;
 }

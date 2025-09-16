@@ -18,12 +18,15 @@ public:
     void printFlipped(char ch, int col, int row);
     void setCursor(uint8_t col, uint8_t row);
     void flipBitmap(const uint8_t in[8], uint8_t out[8]);
+    void incrementCol();
 
 private:
     LiquidCrystal &lcd;
     char slot[MAX_SLOTS];
 
     const uint8_t *getBitmap(char c);
+    uint8_t col;
+    uint8_t row;
 };
 
 #endif
