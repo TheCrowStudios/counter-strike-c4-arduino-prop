@@ -6,17 +6,17 @@
 
 #define LCD_FLIPPED
 
-const int pinArmSwitch = A3;
-const int pinPowerLed = A0;
-const int pinBuzzer = A1;
+const int pinArmSwitch = 3;
+const int pinPowerLed = 5;
+const int pinBuzzer = 4;
 
 // lcd pins
-const int lcdRsPin = A5;
-const int lcdEPin = 5;
-const int lcdD4Pin = 4;
-const int lcdD5Pin = 3;
-const int lcdD6Pin = 2;
-const int lcdD7Pin = A4;
+const int lcdRsPin = A0;
+const int lcdEPin = A1;
+const int lcdD4Pin = A2;
+const int lcdD5Pin = A3;
+const int lcdD6Pin = A4;
+const int lcdD7Pin = A5;
 int row = 0; // used for inputs
 
 const byte ROWS = 4;
