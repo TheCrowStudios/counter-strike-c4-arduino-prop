@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../../../src/BombCode"
+		},
+		{
+			"name": "Bomb",
+			"path": "."
+		},
+		{
+			"name": "arduino-test",
+			"path": "../arduino-test"
+		}
+	],
+	"settings": {}
+}

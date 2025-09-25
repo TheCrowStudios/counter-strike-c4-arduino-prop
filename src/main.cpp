@@ -57,42 +57,97 @@ FlippedLCD fLCD(lcd);
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-void setup()
+unsigned long lastBlink = 0;
+const unsigned long blinkDelay = 500;
+const unsigned long blinkDuration = 250;
+
+/// @brief power led, always blinks when there is power
+void blinkPowerLed()
 {
-  Serial.begin(9600);
-  lcd.begin(LCD_COLS, LCD_ROWS);
-  lcdPrint("hi :3");
-  pinMode(pinArmSwitch, INPUT);
-  pinMode(pinPowerLed, OUTPUT);
-  pinMode(pinBuzzer, OUTPUT);
+  if (millis() - lastBlink >= blinkDelay)
+  {
+    digitalWrite(pinPowerLed, HIGH);
+    lastBlink = millis();
+  }
+  else if (millis() - lastBlink >= blinkDuration)
+  {
+    digitalWrite(pinPowerLed, LOW);
+  }
 }
 
-void loop()
+inline void lcdPrint(const char ch, int col, int row)
 {
-  switch (state)
+#ifndef LCD_FLIPPED;
+  lcdSetCursor(col, row);
+  lcd.print(ch);
+#else
+  fLCD.printFlipped(ch, col, row);
+#endif
+}
+
+inline void lcdPrint(const char str[])
+{
+#ifndef LCD_FLIPPED;
+  lcd.print(str);
+#else
+  fLCD.printFlipped(str);
+#endif
+}
+
+inline void lcdSetCursor(int col, int row)
+{
+#ifndef LCD_FLIPPED;
+  lcd.setCursor(col, row);
+#else
+  fLCD.setCursor(col, row);
+#endif
+}
+
+/// @brief maps keypad input to string passed as argument
+/// @param string
+/// @return
+bool inputKey(SafeString &string)
+{
+  char key = keypad.getKey();
+
+  if (key)
   {
-  case DISARMED:
-    if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
-      state = ARMED;
-    lcd.clear(); // clear lcd
-    break;
-  case ARMED:
-    armed();
-    break;
-  case TICKING:
-    ticking();
-    break;
-  case BLOWN:
-    if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
-      state = DISARMED;
-    break;
-  case DEFUSED:
-    if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
-      state = DISARMED;
-    break;
+    if (key != '*' && key != '#' && string.length() < codeLength) // append char
+    {
+      if (string.length() == 0)
+        lcd.clear();
+
+      string.appendChar(key); // append the character to the stored code
+      Serial.println("key pressed: " + String(key));
+    }
+    else if (key == '*' && string.length() > 0) // clear char
+    {
+      string.deleteLast();
+    }
+
+    SafeString output(16);
+    for (int i = 0; i < 7; i++)
+    {
+      if (i < 7 - string.length())
+        output.appendChar('-'); // append dashes up to the entered text
+      else
+        output.appendChar(string.getData()[i - (7 - string.length())]); // append entered code after the dashes
+    }
+
+    lcdSetCursor(5, 0);
+    lcdPrint(output.getData()); // print the pressed key
   }
 
-  blinkPowerLed();
+  return false;
+}
+
+/// @brief prints asterisks as a code placeholder
+inline void printCodePlaceholder()
+{
+  lcd.clear();
+  lcdSetCursor(5, 0);  // center it
+  lcdPrint("*******"); // print asterisks
+  lcdSetCursor(0, 0);
 }
 
 void armed()
@@ -235,95 +290,40 @@ void ticking()
   }
 }
 
-/// @brief maps keypad input to string passed as argument
-/// @param string
-/// @return
-bool inputKey(SafeString &string)
+void setup()
 {
-  char key = keypad.getKey();
+  Serial.begin(9600);
+  lcd.begin(LCD_COLS, LCD_ROWS);
+  lcdPrint("hi :3");
+  pinMode(pinArmSwitch, INPUT);
+  pinMode(pinPowerLed, OUTPUT);
+  pinMode(pinBuzzer, OUTPUT);
+}
 
-  if (key)
+void loop()
+{
+  switch (state)
   {
-    if (key != '*' && key != '#' && string.length() < codeLength) // append char
-    {
-      if (string.length() == 0)
-        lcd.clear();
-
-      string.appendChar(key); // append the character to the stored code
-      Serial.println("key pressed: " + String(key));
-    }
-    else if (key == '*' && string.length() > 0) // clear char
-    {
-      string.deleteLast();
-    }
-
-    SafeString output(16);
-    for (int i = 0; i < 7; i++)
-    {
-      if (i < 7 - string.length())
-        output.appendChar('-'); // append dashes up to the entered text
-      else
-        output.appendChar(string.getData()[i - (7 - string.length())]); // append entered code after the dashes
-    }
-
-    lcdSetCursor(5, 0);
-    lcdPrint(output.getData()); // print the pressed key
+  case DISARMED:
+    if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
+      state = ARMED;
+    lcd.clear(); // clear lcd
+    break;
+  case ARMED:
+    armed();
+    break;
+  case TICKING:
+    ticking();
+    break;
+  case BLOWN:
+    if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
+      state = DISARMED;
+    break;
+  case DEFUSED:
+    if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
+      state = DISARMED;
+    break;
   }
 
-  return false;
-}
-
-unsigned long lastBlink = 0;
-const unsigned long blinkDelay = 500;
-const unsigned long blinkDuration = 250;
-
-/// @brief power led, always blinks when there is power
-void blinkPowerLed()
-{
-  if (millis() - lastBlink >= blinkDelay)
-  {
-    digitalWrite(pinPowerLed, HIGH);
-    lastBlink = millis();
-  }
-  else if (millis() - lastBlink >= blinkDuration)
-  {
-    digitalWrite(pinPowerLed, LOW);
-  }
-}
-
-inline void lcdPrint(const char ch, int col, int row)
-{
-#ifndef LCD_FLIPPED;
-  lcdSetCursor(col, row);
-  lcd.print(ch);
-#else
-  fLCD.printFlipped(ch, col, row);
-#endif
-}
-
-inline void lcdPrint(const char str[])
-{
-#ifndef LCD_FLIPPED;
-  lcd.print(str);
-#else
-  fLCD.printFlipped(str);
-#endif
-}
-
-inline void lcdSetCursor(int col, int row)
-{
-#ifndef LCD_FLIPPED;
-  lcd.setCursor(col, row);
-#else
-  fLCD.setCursor(col, row);
-#endif
-}
-
-/// @brief prints asterisks as a code placeholder
-inline void printCodePlaceholder()
-{
-  lcd.clear();
-  lcdSetCursor(5, 0);  // center it
-  lcdPrint("*******"); // print asterisks
-  lcdSetCursor(0, 0);
+  blinkPowerLed();
 }

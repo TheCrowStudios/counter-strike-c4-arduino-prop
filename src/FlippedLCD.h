@@ -6,7 +6,7 @@
 #include "FlippedChars.h"
 
 #define MAX_SLOTS 8
-#define LCD_COLS 16
+#define LCD_COLS 8
 #define LCD_ROWS 2
 
 class FlippedLCD
