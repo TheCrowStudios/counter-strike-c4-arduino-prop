@@ -41,8 +41,8 @@ const int codeLength = 7;
 SafeString code = SafeString(codeLength + 1);       // code needed to defuse the bomb
 SafeString defuseCode = SafeString(codeLength + 1); // defuse code entered;
 
-byte rowPins[ROWS] = {12, 11, 10, 9};
-byte colPins[COLS] = {8, 7, 6};
+byte rowPins[ROWS] = {11, 6, 7, 9};
+byte colPins[COLS] = {10, 12, 8};
 
 char keys[ROWS][COLS] = {
     {'1', '2', '3'},
