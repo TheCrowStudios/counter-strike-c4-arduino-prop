@@ -12,17 +12,6 @@ const int pinArmSwitch = 3;
 const int pinPowerLed = 5;
 const int pinBuzzer = 4;
 
-// lcd pins
-const int lcdRsPin = A4;
-const int lcdEPin = A5;
-const int lcdD4Pin = A3;
-const int lcdD5Pin = A2;
-const int lcdD6Pin = A1;
-const int lcdD7Pin = A0;
-
-const byte ROWS = 4;
-const byte COLS = 3;
-
 // inputs
 unsigned long lastCheck = 0;
 const unsigned long checkInterval = 5;
@@ -45,6 +34,9 @@ SafeString code = SafeString(codeLength + 1);       // code needed to defuse the
 SafeString defuseCode = SafeString(codeLength + 1); // defuse code entered;
 
 // keypad
+const byte ROWS = 4;
+const byte COLS = 3;
+
 byte rowPins[ROWS] = {11, 6, 7, 9};
 byte colPins[COLS] = {10, 12, 8};
 
@@ -55,6 +47,14 @@ char keys[ROWS][COLS] = {
     {'*', '0', '#'}};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// lcd pins
+const int lcdRsPin = A4;
+const int lcdEPin = A5;
+const int lcdD4Pin = A3;
+const int lcdD5Pin = A2;
+const int lcdD6Pin = A1;
+const int lcdD7Pin = A0;
 
 // lcd
 LiquidCrystal lcd(lcdRsPin, lcdEPin, lcdD4Pin, lcdD5Pin, lcdD6Pin, lcdD7Pin);
