@@ -63,12 +63,14 @@ FlippedLCD fLCD(lcd);
 #endif
 
 // beeps
-const unsigned int beepDuration = 150; // the beep duration in ms (beeps in cs last 120ms)
-const int countDownBeepsFreq = 3600;   // beep frequency in hz
-const unsigned long fTimerMax = 40000; // max timer until detonation in ms
-const int blowingBeepsFreq = 2000;     // blowing beep frequency in hz
-const int blowingBeepsDelay = 80;      // blowing beep delay
-const int blowingBeepsMax = 12;        // final beeps after relay sound before bomb blows
+// TODO - frequency hz
+const unsigned int beepDuration = 120;       // the beep duration in ms (beeps in cs last 120ms)
+const unsigned int blowingBeepDuration = 40; // the beep duration when blowing in ms (blowing beeps in cs last 40ms)
+const int countDownBeepsFreq = 3600;         // beep frequency in hz
+const unsigned long fTimerMax = 40000;       // max timer until detonation in ms
+const int blowingBeepsFreq = 2000;           // blowing beep frequency in hz
+const int blowingBeepsDelay = 80;            // blowing beep delay
+const int blowingBeepsMax = 12;              // final beeps after relay sound before bomb blows
 
 unsigned long lastBlink = 0;
 const unsigned long blinkDelay = 500;
@@ -243,7 +245,7 @@ void ticking()
         // final blowing beeps
         while (blowingBeeps < blowingBeepsMax)
         {
-          tone(pinBuzzer, blowingBeepsFreq, beepDuration);
+          tone(pinBuzzer, blowingBeepsFreq, blowingBeepDuration);
           blowingBeeps++;
           delay(blowingBeepsDelay);
           blinkPowerLed();
