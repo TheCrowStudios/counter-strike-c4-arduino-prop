@@ -55,6 +55,7 @@ const int lcdD4Pin = A3;
 const int lcdD5Pin = A2;
 const int lcdD6Pin = A1;
 const int lcdD7Pin = A0;
+const int lcdBacklightPin = 2;
 
 // lcd
 LiquidCrystal lcd(lcdRsPin, lcdEPin, lcdD4Pin, lcdD5Pin, lcdD6Pin, lcdD7Pin);
@@ -116,6 +117,17 @@ inline void lcdPrint(const char str[])
 #else
   fLCD.printFlipped(str);
 #endif
+}
+
+inline void lcdOff()
+{
+  digitalWrite(lcdBacklightPin, LOW);
+}
+
+inline void lcdOn()
+{
+  digitalWrite(lcdBacklightPin, HIGH);
+  Serial.println("lcd on");
 }
 
 /// @brief maps keypad input to string passed as argument
@@ -305,6 +317,7 @@ void setup()
   pinMode(pinArmSwitch, INPUT);
   pinMode(pinPowerLed, OUTPUT);
   pinMode(pinBuzzer, OUTPUT);
+  pinMode(lcdBacklightPin, OUTPUT);
 }
 
 void loop()
@@ -312,9 +325,13 @@ void loop()
   switch (state)
   {
   case DISARMED:
-    if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
-      state = ARMED;
     lcd.clear(); // clear lcd
+    lcdOff();
+    if (digitalRead(pinArmSwitch) == HIGH) // check arm switch
+    {
+      state = ARMED;
+      lcdOn();
+    }
     break;
   case ARMED:
     armed();
