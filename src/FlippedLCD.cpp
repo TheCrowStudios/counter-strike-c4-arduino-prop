@@ -141,7 +141,7 @@ void FlippedLCD::flipBitmap(const uint8_t in[8], uint8_t out[8])
 
 void FlippedLCD::incrementCol()
 {
-    col = (col + 1) % 16;
+    col = (col + 1) % LCD_COLS;
     if (col == 0)
-        row = (row + 1) % 2;
+        row = (row + 1) % LCD_ROWS;
 }
