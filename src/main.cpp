@@ -7,6 +7,7 @@
 // TODO - normal lcd orientation not working
 #define LCD_FLIPPED
 
+// general pins
 const int pinArmSwitch = 3;
 const int pinPowerLed = 5;
 const int pinBuzzer = 4;
@@ -18,7 +19,6 @@ const int lcdD4Pin = A3;
 const int lcdD5Pin = A2;
 const int lcdD6Pin = A1;
 const int lcdD7Pin = A0;
-int row = 0; // used for inputs
 
 const byte ROWS = 4;
 const byte COLS = 3;
@@ -211,7 +211,6 @@ void ticking()
   int blowingBeeps = 0;                        // final blowing beeps sounded
 
   defuseCode.clear(); // clear entered code
-  row = 0;
 
   float fDelay = 0;
 
@@ -285,12 +284,10 @@ void ticking()
         lcdSetCursor(4, 0);
         lcdPrint("DEFUSED");
         state = DEFUSED;
-        row = 0;
       }
       else // incorrect code entered
       {
         defuseCode.clear(); // clear entered code
-        row = 0;            // reset row
         printCodePlaceholder();
       }
     }
