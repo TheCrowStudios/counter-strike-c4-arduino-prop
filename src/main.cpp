@@ -75,6 +75,16 @@ void blinkPowerLed()
   }
 }
 
+inline void lcdSetCursor(int col, int row)
+{
+#ifndef LCD_FLIPPED;
+  lcd.setCursor((LCD_COLS - 1) - col, (LCD_ROWS - 1) - row);
+#else
+  fLCD.setCursor(col, row);
+#endif
+}
+
+
 inline void lcdPrint(const char ch, int col, int row)
 {
 #ifndef LCD_FLIPPED;
@@ -91,15 +101,6 @@ inline void lcdPrint(const char str[])
   lcd.print(str);
 #else
   fLCD.printFlipped(str);
-#endif
-}
-
-inline void lcdSetCursor(int col, int row)
-{
-#ifndef LCD_FLIPPED;
-  lcd.setCursor(col, row);
-#else
-  fLCD.setCursor(col, row);
 #endif
 }
 
