@@ -4,6 +4,7 @@
 #include "SafeString.h"
 #include "FlippedLCD.h"
 
+// TODO - normal lcd orientation not working
 #define LCD_FLIPPED
 
 const int pinArmSwitch = 3;
@@ -78,7 +79,7 @@ void blinkPowerLed()
 inline void lcdSetCursor(int col, int row)
 {
 #ifndef LCD_FLIPPED
-  lcd.setCursor((LCD_COLS - 1) - col, (LCD_ROWS - 1) - row);
+  lcd.setCursor(col, row);
 #else
   fLCD.setCursor(col, row);
 #endif
