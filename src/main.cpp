@@ -27,6 +27,7 @@ const byte COLS = 3;
 unsigned long lastCheck = 0;
 const unsigned long checkInterval = 5;
 
+// states
 enum State
 {
   DISARMED,
@@ -38,10 +39,12 @@ enum State
 
 State state = DISARMED;
 
+// codes
 const int codeLength = 7;
 SafeString code = SafeString(codeLength + 1);       // code needed to defuse the bomb
 SafeString defuseCode = SafeString(codeLength + 1); // defuse code entered;
 
+// keypad
 byte rowPins[ROWS] = {11, 6, 7, 9};
 byte colPins[COLS] = {10, 12, 8};
 
@@ -51,12 +54,21 @@ char keys[ROWS][COLS] = {
     {'7', '8', '9'},
     {'*', '0', '#'}};
 
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// lcd
 LiquidCrystal lcd(lcdRsPin, lcdEPin, lcdD4Pin, lcdD5Pin, lcdD6Pin, lcdD7Pin);
 #ifdef LCD_FLIPPED
 FlippedLCD fLCD(lcd);
 #endif
 
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+// beeps
+const unsigned int beepDuration = 150; // the beep duration in ms (beeps in cs last 120ms)
+const int countDownBeepsFreq = 3600;   // beep frequency in hz
+const unsigned long fTimerMax = 40000; // max timer until detonation in ms
+const int blowingBeepsFreq = 2000;     // blowing beep frequency in hz
+const int blowingBeepsDelay = 80;      // blowing beep delay
+const int blowingBeepsMax = 12;        // final beeps after relay sound before bomb blows
 
 unsigned long lastBlink = 0;
 const unsigned long blinkDelay = 500;
@@ -84,7 +96,6 @@ inline void lcdSetCursor(int col, int row)
   fLCD.setCursor(col, row);
 #endif
 }
-
 
 inline void lcdPrint(const char ch, int col, int row)
 {
@@ -192,15 +203,10 @@ void armed()
 
 void ticking()
 {
-  const int countDownBeepsFreq = 3600; // beep frequency in hz
-  float fLastBeep = 0;                 // time of last beep in ms
+  float fLastBeep = 0; // time of last beep in ms
   unsigned long startTime = millis();
   unsigned long fTimer = millis() - startTime; // current timer in ms
-  const unsigned long fTimerMax = 40000;       // max timer until detonation in ms
-  const int blowingBeepsFreq = 2000;           // blowing beep frequency in hz
-  const int blowingBeepsDelay = 80;            // blowing beep delay
   int blowingBeeps = 0;                        // final blowing beeps sounded
-  const int blowingBeepsMax = 12;              // final beeps after relay sound before bomb blows
 
   defuseCode.clear(); // clear entered code
   row = 0;
@@ -223,7 +229,7 @@ void ticking()
       fDelay = fFreq * 1000;                                    // delay in ms
       Serial.println(String(fComplete) + " " + String(fFreq) + " " + String(fDelay));
 
-      tone(pinBuzzer, countDownBeepsFreq, 1);                                                            // beep
+      tone(pinBuzzer, countDownBeepsFreq, beepDuration);                                                 // beep
       Serial.println("beep " + String(fTimer) + " time since last beep: " + String(fTimer - fLastBeep)); // for debugging
       fLastBeep = fTimer;
 
@@ -237,7 +243,7 @@ void ticking()
         // final blowing beeps
         while (blowingBeeps < blowingBeepsMax)
         {
-          tone(pinBuzzer, blowingBeepsFreq, 25);
+          tone(pinBuzzer, blowingBeepsFreq, beepDuration);
           blowingBeeps++;
           delay(blowingBeepsDelay);
           blinkPowerLed();
