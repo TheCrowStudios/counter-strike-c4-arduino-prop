@@ -11,12 +11,12 @@ const int pinPowerLed = 5;
 const int pinBuzzer = 4;
 
 // lcd pins
-const int lcdRsPin = A0;
-const int lcdEPin = A1;
-const int lcdD4Pin = A2;
-const int lcdD5Pin = A3;
-const int lcdD6Pin = A4;
-const int lcdD7Pin = A5;
+const int lcdRsPin = A4;
+const int lcdEPin = A5;
+const int lcdD4Pin = A3;
+const int lcdD5Pin = A2;
+const int lcdD6Pin = A1;
+const int lcdD7Pin = A0;
 int row = 0; // used for inputs
 
 const byte ROWS = 4;
