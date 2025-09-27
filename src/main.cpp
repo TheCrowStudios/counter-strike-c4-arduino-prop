@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Keypad.h>
 #include <LiquidCrystal.h>
+#include <avr/sleep.h> 
+#include <avr/interrupt.h> 
 #include "SafeString.h"
 #include "FlippedLCD.h"
 
@@ -323,6 +325,25 @@ void ticking()
   }
 }
 
+volatile bool wakeUp = false;
+
+void wakeISR() {
+  wakeUp = true;
+}
+
+void enterSleep() {
+  wakeUp = false;
+
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  noInterrupts();
+
+  sleep_enable();
+  interrupts();
+  sleep_cpu();
+
+  sleep_disable();
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -332,6 +353,7 @@ void setup()
   pinMode(pinPowerLed, OUTPUT);
   pinMode(pinBuzzer, OUTPUT);
   pinMode(lcdBacklightPin, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(pinArmSwitch), wakeISR, RISING);
 }
 
 void loop()
@@ -346,6 +368,7 @@ void loop()
       state = ARMED;
       lcdOn();
     }
+    enterSleep();
     break;
   case ARMED:
     armed();
@@ -366,4 +389,5 @@ void loop()
   }
 
   blinkPowerLed();
+  delay(50);
 }
