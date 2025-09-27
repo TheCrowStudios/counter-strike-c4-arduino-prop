@@ -56,6 +56,7 @@ const int lcdD5Pin = A2;
 const int lcdD6Pin = A1;
 const int lcdD7Pin = A0;
 const int lcdBacklightPin = 2;
+const unsigned int lcdTimeoutDelay = 5000; // lcd timeout delay in ms
 
 // lcd
 LiquidCrystal lcd(lcdRsPin, lcdEPin, lcdD4Pin, lcdD5Pin, lcdD6Pin, lcdD7Pin);
@@ -129,6 +130,17 @@ inline void lcdOn()
   digitalWrite(lcdBacklightPin, HIGH);
   Serial.println("lcd on");
 }
+
+unsigned long lcdLastOn = 0;
+
+inline void setLcdLastOn() {
+  lcdLastOn = millis();
+}
+
+void lcdTimeout() {
+  if (millis() - lcdLastOn >= lcdTimeoutDelay) lcdOff();
+}
+
 
 /// @brief maps keypad input to string passed as argument
 /// @param string
@@ -262,6 +274,7 @@ void ticking()
           blinkPowerLed();
         }
         state = BLOWN;
+        setLcdLastOn();
         return;
       }
     }
@@ -296,6 +309,7 @@ void ticking()
         lcdSetCursor(4, 0);
         lcdPrint("DEFUSED");
         state = DEFUSED;
+        setLcdLastOn();
       }
       else // incorrect code entered
       {
@@ -342,10 +356,12 @@ void loop()
   case BLOWN:
     if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
       state = DISARMED;
+    lcdTimeout();
     break;
   case DEFUSED:
     if (digitalRead(pinArmSwitch) == LOW) // have to flip switch off and on to arm it again
       state = DISARMED;
+    lcdTimeout();
     break;
   }
 
